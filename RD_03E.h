@@ -7,9 +7,9 @@ class RD_03E {
 private:
   HardwareSerial& hardwareSerial;
   float distance;
+  unsigned long lastSucessfulRead = 0;
   int status = 0;
   uint8_t RX_BUF[64] = { 0 };
-  uint8_t RX_count = 0;
   uint8_t RX_temp;
 
 public:
@@ -25,6 +25,8 @@ public:
   float getDistance();
 
   int getStatus();
+
+  unsigned long getLastSucessfulRead();
 
   bool isHumanPresent();
 };
