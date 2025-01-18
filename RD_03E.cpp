@@ -29,26 +29,25 @@ void RD_03E::begin(unsigned long baudRate, int rxPin, int txPin) {
 
 void RD_03E::run() {
 
-  static uint8_t RX_count = 0;
+  static int rxCount = 0;
+  int dataCount = hardwareSerial.available();
 
-  // Capture all bytes until the buffer is full or no more data is available
-  while (hardwareSerial.available() && RX_count < sizeof(RX_BUF)) {
-    RX_temp = hardwareSerial.read();  // Read a byte
-    RX_BUF[RX_count++] = RX_temp;     // Store it in the buffer
-  }
+  while (dataCount--) {
+    uint8_t rxByte = hardwareSerial.read();
+    rxBuffer[rxCount] = rxByte;
+    rxCount = (rxCount + 1) % rxBufferSize;
 
-  // Process the buffer
-  for (int i = 0; i < RX_count - 6; ++i) {
-    // Check for a valid packet starting from the current index
-    if (RX_BUF[i] == 0xAA && RX_BUF[i + 1] == 0xAA && RX_BUF[i + 5] == 0x55 && RX_BUF[i + 6] == 0x55) {
-      uint16_t range = (RX_BUF[i + 4] << 8) | RX_BUF[i + 3];  // Combine distance bytes
-      distance = static_cast<float>(range) / 100;             // Convert cm to meters
-      status = RX_BUF[i + 2];
-      lastSucessfulRead = millis();
-      break;
+    if (rxCount >= 7) {
+      int startIndex = (rxCount - 7);
+      if (rxBuffer[startIndex] == 0xAA && rxBuffer[(startIndex + 1)] == 0xAA && rxBuffer[(startIndex + 5)] == 0x55 && rxBuffer[(startIndex + 6)] == 0x55) {
+        uint16_t range = (rxBuffer[(startIndex + 4)] << 8) | rxBuffer[(startIndex + 3)];
+        distance = static_cast<float>(range) / 100;
+        status = rxBuffer[startIndex + 2];
+        lastSucessfulRead = millis();
+        break;
+      }
     }
   }
-  memset(RX_BUF, 0x00, sizeof(RX_BUF));  // Reset buffer
 }
 
 float RD_03E::getDistance() {

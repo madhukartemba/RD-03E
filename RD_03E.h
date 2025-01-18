@@ -9,8 +9,8 @@ private:
   float distance;
   unsigned long lastSucessfulRead = 0;
   int status = 0;
-  uint8_t RX_BUF[64] = { 0 };
-  uint8_t RX_temp;
+  static constexpr int rxBufferSize = 32;
+  uint8_t rxBuffer[rxBufferSize] = { 0 };
 
 public:
   RD_03E(HardwareSerial& serial);
